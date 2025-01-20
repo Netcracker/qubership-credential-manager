@@ -128,3 +128,7 @@ func GetSecretNames() []string {
 	secretNames := strings.Split(secretNamesStr, ",")
 	return secretNames
 }
+
+func GetHookName() string {
+	return GetEnv("HOOK_NAME", "credentials-saver")
+}

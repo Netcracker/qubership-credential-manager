@@ -9,9 +9,9 @@ Credential manager consists of several packages.
 ## environment variables
 The next environment variables must be configured:
 
-`IS_HOOK` - Required for hook module `IsHook() bool` function.
-`SECRET_NAMES` - List of coma separated secret names to work with.
-`HOOK_NAME` - Prefix for hook Job objects. By default `credentials-saver`.
+`IS_HOOK` - Required for hook module `IsHook() bool` function.  
+`SECRET_NAMES` - List of coma separated secret names to work with.  
+`HOOK_NAME` - Prefix for hook Job objects. By default `credentials-saver`.  
 
 # Modules
 

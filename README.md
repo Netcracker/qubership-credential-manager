@@ -11,6 +11,7 @@ The next environment variables must be configured:
 
 `IS_HOOK` - Required for hook module `IsHook() bool` function.
 `SECRET_NAMES` - List of coma separated secret names to work with.
+`HOOK_NAME` - Prefix for hook Job objects. By default `credentials-saver`.
 
 # Modules
 
@@ -23,6 +24,7 @@ API:
 New secrets with the same content and name with postfix `-old` will be created for all of the provided secrets.
 Secrets also will be locked with `locked-for-watcher=true` annotation on them.
 
+`ClearHooks()` - This function deletes all Kubernetes Job and Pod objects in current namespace with prefix from `HOOK_NAME` environment variable.
 
 ## informer
 This module allows you to create watcher for secret.

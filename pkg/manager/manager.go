@@ -156,7 +156,7 @@ func SetOwnerRefForSecretCopies(secretNames []string, ownerRef []metav1.OwnerRef
 		if err != nil {
 			return err
 		}
-		secret.OwnerReferences = append(secret.OwnerReferences, ownerRef...)
+		secret.OwnerReferences = ownerRef
 		err = updateSecret(secret)
 		if err != nil {
 			return err

@@ -12,4 +12,12 @@ permissions:
 
 jobs:
   pr-auto-assign:
-    uses: netcracker/qubership-workflow-hub/.github/workflows/pr-assigner.yml@main
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: netcracker/qubership-workflow-hub/actions/pr-assigner@main
+      with:
+        assignees-count: 2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

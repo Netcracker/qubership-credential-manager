@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM golang:1.22.7-alpine3.20 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.24.5-alpine3.22 AS builder
 
 ENV GOSUMDB=off
 
@@ -20,7 +20,7 @@ ARG TARGETOS TARGETARCH
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o ./build/_output/bin/qubership-credential-manager \
     -gcflags all=-trimpath=${GOPATH} -asmflags all=-trimpath=${GOPATH} ./cmd/qubership-credential-manager
 
-FROM alpine:3.20.3
+FROM alpine:3.22.0
 
 ENV CONTROLLER=/usr/local/bin/qubership-credential-manager \
     USER_UID=1001

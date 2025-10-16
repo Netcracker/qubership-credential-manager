@@ -15,6 +15,7 @@
 package utils
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -35,29 +36,105 @@ var (
 	k8sClient client.Client
 )
 
-func GetLogger() *zap.Logger {
-	if logger == nil {
-		logger = createLogger()
+func GetLogger(level ...interface{}) *zap.Logger {
+	logLevel := determineLogLevel(level...)
+	atom := zap.NewAtomicLevel()
+	encoderCfg := getEncoderConfig()
+	zapLevel := getLogLevel(logLevel)
+
+	customHandler := &CustomLogHandler{minLevel: zapLevel}
+
+	core := zapcore.NewCore(
+		zapcore.NewJSONEncoder(encoderCfg),
+		zapcore.AddSync(customHandler),
+		atom,
+	)
+
+	baseFields := []zap.Field{
+		zap.String("request_id", os.Getenv("REQUEST_ID")),
+		zap.String("tenant_id", os.Getenv("TENANT_ID")),
+		zap.String("thread", os.Getenv("THREAD")),
+		zap.String("class", os.Getenv("CLASS")),
 	}
 
-	return logger
+	zapLogger := zap.New(core).With(baseFields...)
+	atom.SetLevel(zapLevel)
+
+	return zapLogger
 }
 
-func createLogger() *zap.Logger {
-	atom := zap.NewAtomicLevel()
+func determineLogLevel(level ...interface{}) string {
+	if len(level) > 0 {
+		switch v := level[0].(type) {
+		case string:
+			return v
+		case bool:
+			if v {
+				return "DEBUG"
+			}
+			return "INFO"
+		}
+	}
+	logLevel := os.Getenv("LOG_LEVEL")
+	if logLevel == "" {
+		logLevel = "INFO"
+	}
+	return logLevel
+}
+
+func getLogLevel(level string) zapcore.Level {
+	switch level {
+	case "OFF":
+		return zapcore.Level(6)
+	case "FATAL":
+		return zapcore.FatalLevel
+	case "ERROR":
+		return zapcore.ErrorLevel
+	case "WARN":
+		return zapcore.WarnLevel
+	case "INFO":
+		return zapcore.InfoLevel
+	case "DEBUG":
+		return zapcore.DebugLevel
+	case "TRACE":
+		return zapcore.Level(-1)
+	default:
+		return zapcore.InfoLevel
+	}
+}
+
+func getEncoderConfig() zapcore.EncoderConfig {
 	encoderCfg := zap.NewProductionEncoderConfig()
 	encoderCfg.TimeKey = "timestamp"
 	encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
+	return encoderCfg
+}
 
-	newLogger := zap.New(zapcore.NewCore(
-		zapcore.NewJSONEncoder(encoderCfg),
-		zapcore.Lock(os.Stdout),
-		atom,
-	))
-	defer func() {
-		_ = newLogger.Sync()
-	}()
-	return newLogger
+type CustomLogHandler struct {
+	minLevel zapcore.Level
+}
+
+func (h *CustomLogHandler) Write(p []byte) (n int, err error) {
+	var logEntry map[string]interface{}
+	if err := json.Unmarshal(p, &logEntry); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to parse log message: %s\n", p)
+		return 0, fmt.Errorf("failed to parse log message")
+	}
+
+	levelStr := strings.ToUpper(fmt.Sprintf("%v", logEntry["level"]))
+	timestamp := fmt.Sprintf("%v", logEntry["timestamp"])
+	message := fmt.Sprintf("%v", logEntry["msg"])
+	requestID := fmt.Sprintf("%v", logEntry["request_id"])
+	tenantID := fmt.Sprintf("%v", logEntry["tenant_id"])
+	thread := fmt.Sprintf("%v", logEntry["thread"])
+	class := fmt.Sprintf("%v", logEntry["class"])
+
+	output := fmt.Sprintf("[%s] [%s] [request_id=%s] [tenant_id=%s] [thread=%s] [class=%s] %s",
+		timestamp, levelStr, requestID, tenantID, thread, class, message)
+
+	fmt.Println(output)
+
+	return len(p), nil
 }
 
 func GetK8SClient() client.Client {

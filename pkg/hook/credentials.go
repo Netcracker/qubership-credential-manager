@@ -140,7 +140,7 @@ func commonLabels(name string) map[string]string {
 	applicationName := strings.ToLower(os.Getenv("APPLICATION_NAME"))
 
 	labels := map[string]string{
-		"app.kubernetes.io/managed-by": "operator",
+		"app.kubernetes.io/managed-by": "credential-manager",
 	}
 	if sessionId != "" {
 		labels["deployment.netcracker.com/sessionId"] = sessionId

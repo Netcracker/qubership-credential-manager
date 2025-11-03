@@ -17,7 +17,9 @@ package hook
 import (
 	"context"
 	"fmt"
+	"os"
 	"strconv"
+	"strings"
 
 	"github.com/Netcracker/qubership-credential-manager/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
@@ -119,6 +121,7 @@ func oldSecret(oldSecretName string) *corev1.Secret {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      oldSecretName,
 			Namespace: namespace,
+			Labels:    commonLabels(oldSecretName),
 		},
 	}
 }
@@ -130,4 +133,21 @@ func IsHook() bool {
 		panic(err)
 	}
 	return isHook
+}
+
+func commonLabels(name string) map[string]string {
+	sessionId := strings.ToLower(os.Getenv("SESSION_ID"))
+	applicationName := strings.ToLower(os.Getenv("APPLICATION_NAME"))
+
+	labels := map[string]string{
+		"app.kubernetes.io/managed-by": "operator",
+	}
+	if sessionId != "" {
+		labels["deployment.netcracker.com/sessionId"] = sessionId
+	}
+	if applicationName != "" {
+		labels["app.kubernetes.io/part-of"] = applicationName
+	}
+
+	return labels
 }

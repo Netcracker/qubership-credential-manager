@@ -88,6 +88,7 @@ func ActualizeCreds(secretName string, changeCredsFunc func(newSecret, oldSecret
 		if errors.IsNotFound(err) {
 			oldSecret := getNewSecret(oldSecretName)
 			oldSecret.Data = newSecret.Data
+			oldSecret.Labels = newSecret.Labels
 			err = createSecret(oldSecret)
 			return
 		}

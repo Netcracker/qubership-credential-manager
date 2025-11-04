@@ -121,7 +121,7 @@ func oldSecret(oldSecretName string) *corev1.Secret {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      oldSecretName,
 			Namespace: namespace,
-			Labels:    commonLabels(oldSecretName),
+			Labels:    commonLabels(),
 		},
 	}
 }
@@ -135,12 +135,16 @@ func IsHook() bool {
 	return isHook
 }
 
-func commonLabels(name string) map[string]string {
+func commonLabels() map[string]string {
 	sessionId := strings.ToLower(os.Getenv("SESSION_ID"))
 	applicationName := strings.ToLower(os.Getenv("APPLICATION_NAME"))
+	managedBy := strings.ToLower(os.Getenv("MANAGED_BY"))
 
+	if managedBy == "" {
+		managedBy = "credential-manager"
+	}
 	labels := map[string]string{
-		"app.kubernetes.io/managed-by": "credential-manager",
+		"app.kubernetes.io/managed-by": managedBy,
 	}
 	if sessionId != "" {
 		labels["deployment.netcracker.com/sessionId"] = sessionId

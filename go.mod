@@ -1,6 +1,6 @@
 module github.com/Netcracker/qubership-credential-manager
 
-go 1.24.7
+go 1.25.3
 
 // k8s versions set for compatibility with other components
 require (

@@ -5,7 +5,7 @@ This component is used to support credentials change functionality.
 Credential manager consists of several packages.
 
 # Coniguration
-
+#test
 ## environment variables
 The next environment variables must be configured:
 

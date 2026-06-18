@@ -59,19 +59,29 @@ func PrepareOldCreds(secrets []string) {
 		if err != nil {
 			panic(err)
 		}
-		oldSecret := oldSecret(oldSecretName)
-		oldSecret.Data = newSecret.Data
-		oldSecret.Labels = newSecret.Labels
 		if !isSecretExist {
+			oldSecret := oldSecret(oldSecretName)
+			oldSecret.Data = newSecret.Data
+			oldSecret.Labels = newSecret.Labels
 			err = k8sClient.Create(ctx, oldSecret)
 			if err != nil {
 				logger.Info(fmt.Sprintf("cannot create %s secret", oldSecret.Name))
 				panic(err)
 			}
 		} else {
-			err = k8sClient.Update(ctx, oldSecret)
+			existingOldSecret := &corev1.Secret{}
+			err = k8sClient.Get(ctx, types.NamespacedName{
+				Name: oldSecretName, Namespace: namespace,
+			}, existingOldSecret)
 			if err != nil {
-				logger.Info(fmt.Sprintf("cannot update %s secret", oldSecret.Name))
+				logger.Info(fmt.Sprintf("cannot get existing %s secret", oldSecretName))
+				panic(err)
+			}
+			existingOldSecret.Data = newSecret.Data
+			existingOldSecret.Labels = newSecret.Labels
+			err = k8sClient.Update(ctx, existingOldSecret)
+			if err != nil {
+				logger.Info(fmt.Sprintf("cannot update %s secret", existingOldSecret.Name))
 				panic(err)
 			}
 		}

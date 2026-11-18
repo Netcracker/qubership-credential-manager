@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM golang:1.27.1-alpine3.24 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.27.4-alpine3.24 AS builder
 
 ENV GOSUMDB=off
 
@@ -27,6 +27,7 @@ ENV CONTROLLER=/usr/local/bin/qubership-credential-manager \
 
 RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
     && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
+    && apk upgrade --no-cache \
     && apk add --update --upgrade --no-cache \
         libcurl curl
 
